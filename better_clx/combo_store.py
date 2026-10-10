@@ -4,14 +4,18 @@ from __future__ import annotations
 
 import json
 import os
+import shutil
 from pathlib import Path
 
 from better_clx.combo_models import ComboGroup
+from better_clx.runtime_paths import SOURCE_ROOT, install_root
 
-PROJECT_ROOT = Path(__file__).resolve().parent.parent
-COMBO_DIR = PROJECT_ROOT / "combo"
+PROJECT_ROOT = SOURCE_ROOT
+RUNTIME_ROOT = install_root()
+COMBO_DIR = RUNTIME_ROOT / "combo"
+EXAMPLE_COMBO_DIR = RUNTIME_ROOT / "examples" / "combo"
 COMBO_INDEX_PATH = COMBO_DIR / "__all__.json"
-LEGACY_COMBO_STORE_PATH = PROJECT_ROOT / "combo_groups.json"
+LEGACY_COMBO_STORE_PATH = RUNTIME_ROOT / "combo_groups.json"
 
 
 class ComboStore:
@@ -27,6 +31,8 @@ class ComboStore:
     def load(self) -> list[ComboGroup]:
         if self._single_file:
             return self._load_single_file()
+        if not self.index_path.is_file():
+            self._seed_examples()
         if not self.index_path.is_file():
             return self._migrate_legacy()
         try:
@@ -53,6 +59,20 @@ class ComboStore:
             group.enabled = bool(entry.get("enabled", group.enabled))
             groups.append(group)
         return groups
+
+    def _seed_examples(self) -> None:
+        """Copy installer-provided examples into the writable package directory once."""
+        index = EXAMPLE_COMBO_DIR / "__all__.json"
+        if not index.is_file():
+            return
+        try:
+            self.directory.mkdir(parents=True, exist_ok=True)
+            for source in EXAMPLE_COMBO_DIR.glob("*.json"):
+                target = self.directory / source.name
+                if not target.exists():
+                    shutil.copy2(source, target)
+        except OSError:
+            return
 
     def _load_single_file(self) -> list[ComboGroup]:
         if not self.path.is_file():

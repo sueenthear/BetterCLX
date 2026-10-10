@@ -15,8 +15,9 @@ from PySide6.QtWidgets import QApplication
 from qfluentwidgets import Theme, setTheme
 
 from better_clx.config import APP_NAME
+from better_clx.runtime_paths import SOURCE_ROOT, install_root, resource_path
 from better_clx.ui.main_window import MainWindow
-from better_clx.ui.splash import PROJECT_ROOT, StartupSplash
+from better_clx.ui.splash import StartupSplash
 
 _UAC_FLAG = "--uac-elevated"
 _MUTEX_NAME = "Local\\Better-CLX-SingleInstance"
@@ -97,12 +98,20 @@ def relaunch_as_admin() -> bool:
         ctypes.c_int,
     ]
     shell32.ShellExecuteW.restype = wintypes.HINSTANCE
+    if getattr(sys, "frozen", False):
+        executable = str(Path(sys.executable).resolve())
+        parameters = _UAC_FLAG
+        working_directory = str(install_root())
+    else:
+        executable = sys.executable
+        parameters = "-m better_clx.main " + _UAC_FLAG
+        working_directory = str(SOURCE_ROOT)
     result = shell32.ShellExecuteW(
         None,
         "runas",
-        sys.executable,
-        "-m better_clx.main --uac-elevated",
-        str(Path(__file__).resolve().parents[1]),
+        executable,
+        parameters,
+        working_directory,
         1,
     )
     return result > 32
@@ -142,7 +151,7 @@ def main() -> int:
         app = QApplication(sys.argv)
         app.setApplicationName(APP_NAME)
         app.setOrganizationName("Better CLX")
-        icon = QIcon(str(PROJECT_ROOT / "icon.ico"))
+        icon = QIcon(str(resource_path("icon.ico")))
         app.setWindowIcon(icon)
         setTheme(Theme.AUTO)
 

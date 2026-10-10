@@ -5,15 +5,18 @@ from __future__ import annotations
 import configparser
 import json
 import os
+import sys
 import uuid
 from dataclasses import asdict, dataclass, field
 from pathlib import Path
 
 from better_clx.config import GAME_PROCESS_NAMES
+from better_clx.runtime_paths import SOURCE_ROOT, install_root
 
-PROJECT_ROOT = Path(__file__).resolve().parents[2]
-SETTINGS_PATH = PROJECT_ROOT / "user_setting.json"
-LEGACY_SETTINGS_PATH = PROJECT_ROOT / "user_setting.ini"
+PROJECT_ROOT = SOURCE_ROOT
+RUNTIME_ROOT = install_root()
+SETTINGS_PATH = RUNTIME_ROOT / "user_setting.json"
+LEGACY_SETTINGS_PATH = RUNTIME_ROOT / "user_setting.ini"
 
 DEFAULT_GAME_64_RELATIVE_PATH = r"Engine\Binaries\Win64\wyclx64.exe"
 DEFAULT_GAME_32_RELATIVE_PATH = r"Engine\Binaries\Win32\wyclx.exe"

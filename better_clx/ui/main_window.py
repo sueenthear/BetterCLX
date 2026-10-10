@@ -17,6 +17,7 @@ from better_clx.models import GameWindow
 from better_clx.services.settings import SettingsStore
 from better_clx.services.monitor import WindowMonitor
 from better_clx.services.window_actions import WindowBindingController
+from better_clx.ui.about_page import AboutPage
 from better_clx.ui.binding_page import BindingPage
 from better_clx.ui.combo_page import ComboPage
 from better_clx.ui.start_page import StartPage
@@ -60,6 +61,7 @@ class MainWindow(FluentWindow):
         self.start_page = StartPage(self)
         self.binding_page = BindingPage(self.window_controller, self)
         self.combo_page = ComboPage(self.window_controller, self)
+        self.about_page = AboutPage(self)
         self._init_navigation()
 
         self.monitor = WindowMonitor(self)
@@ -130,6 +132,12 @@ class MainWindow(FluentWindow):
             FluentIcon.EDIT,
             "连招",
             position=NavigationItemPosition.TOP,
+        )
+        self.addSubInterface(
+            self.about_page,
+            FluentIcon.INFO,
+            "关于",
+            position=NavigationItemPosition.BOTTOM,
         )
 
     def _register_fullscreen_hotkey(self) -> None:

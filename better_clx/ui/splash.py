@@ -9,9 +9,10 @@ from PySide6.QtGui import QPixmap
 from PySide6.QtWidgets import QApplication, QLabel, QProgressBar, QVBoxLayout, QWidget
 
 from better_clx.config import APP_NAME
+from better_clx.runtime_paths import SOURCE_ROOT, resource_path
 
-PROJECT_ROOT = Path(__file__).resolve().parents[2]
-BACKGROUND_PATH = PROJECT_ROOT / "Background.jpg"
+PROJECT_ROOT = SOURCE_ROOT
+BACKGROUND_PATH = resource_path("Background.jpg")
 
 
 class StartupSplash(QWidget):
@@ -20,7 +21,11 @@ class StartupSplash(QWidget):
     def __init__(self, parent: QWidget | None = None) -> None:
         super().__init__(parent)
         self.setWindowTitle(APP_NAME)
-        self.setWindowFlags(Qt.WindowType.SplashScreen | Qt.WindowType.FramelessWindowHint)
+        self.setWindowFlags(
+            Qt.WindowType.SplashScreen
+            | Qt.WindowType.FramelessWindowHint
+            | Qt.WindowType.WindowStaysOnTopHint
+        )
         self.setAttribute(Qt.WidgetAttribute.WA_DeleteOnClose, True)
         self.setFixedSize(760, 430)
         self._build_ui()
