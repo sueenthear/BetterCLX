@@ -1,0 +1,47 @@
+{
+  "version": 2,
+  "groups": [
+    {
+      "group_id": "4e6b4f1a00614740813bd280e32fff83",
+      "name": "全技能轮扫-1~9",
+      "enabled": false,
+      "order": 0,
+      "file": "4e6b4f1a00614740813bd280e32fff83.json"
+    },
+    {
+      "group_id": "e7b07c4dfdd04a419b21b701e8443d6f",
+      "name": "动如脱兔-ws反复",
+      "enabled": false,
+      "order": 1,
+      "file": "e7b07c4dfdd04a419b21b701e8443d6f.json"
+    },
+    {
+      "group_id": "f99d3484c57e4721a704822581a4329b",
+      "name": "绝学触发",
+      "enabled": false,
+      "order": 2,
+      "file": "f99d3484c57e4721a704822581a4329b.json"
+    },
+    {
+      "group_id": "279e21fafe74402db850d861709fbdc7",
+      "name": "轻功触发",
+      "enabled": false,
+      "order": 3,
+      "file": "279e21fafe74402db850d861709fbdc7.json"
+    },
+    {
+      "group_id": "78f79894e81a4c438f18750d19f801f0",
+      "name": "小跳中断",
+      "enabled": false,
+      "order": 4,
+      "file": "78f79894e81a4c438f18750d19f801f0.json"
+    },
+    {
+      "group_id": "abaa25b2e9194862bc073a7ba0751d45",
+      "name": "自动拉远",
+      "enabled": false,
+      "order": 5,
+      "file": "abaa25b2e9194862bc073a7ba0751d45.json"
+    }
+  ]
+}

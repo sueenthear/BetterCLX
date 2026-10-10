@@ -1,0 +1,21 @@
+[project]
+name = "better-clx"
+version = "0.1.0"
+description = "一梦江湖多实例窗口监控与启动面板"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "PySide6>=6.8.0",
+    "PySide6-Fluent-Widgets>=1.8.0",
+    "pywin32>=306",
+]
+
+[project.scripts]
+clx = "better_clx.main:main"
+
+[build-system]
+requires = ["uv_build>=0.8.0,<0.9.0"]
+build-backend = "uv_build"
+
+[tool.uv.build-backend]
+module-root = ""

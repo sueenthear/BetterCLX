@@ -1,0 +1,29 @@
+# Local Python environment and caches
+.venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+
+# Local runtime/user configuration
+user_setting.json
+user_setting.ini
+combo_groups.json
+
+# Local app/runtime artifacts
+*.log
+*.tmp
+build/
+dist/
+release/
+*.spec
+
+# IDE and OS files
+.vscode/
+.idea/
+*.user
+.DS_Store
+Thumbs.db
+
+# Reasonix workspace metadata
+.reasonix/

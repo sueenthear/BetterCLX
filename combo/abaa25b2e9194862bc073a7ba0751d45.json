@@ -1,0 +1,32 @@
+{
+  "version": 2,
+  "group": {
+    "group_id": "abaa25b2e9194862bc073a7ba0751d45",
+    "name": "自动拉远",
+    "enabled": false,
+    "triggers": [
+      {
+        "trigger_id": "8856271ef6d14e0787be6a419cc03db6",
+        "key_name": "鼠标右键",
+        "mode": "hold"
+      },
+      {
+        "trigger_id": "8c8a4610d99e4adc98be015e8e196696",
+        "key_name": "ALT",
+        "mode": "toggle"
+      }
+    ],
+    "operations": [
+      {
+        "operation_id": "de5b822096bd44a4915255a80ad7e763",
+        "operation_type": "mouse_scroll",
+        "key_name": "",
+        "keyboard_action": "press",
+        "delay_ms": 100,
+        "delay_value": 100.0,
+        "delay_unit": "ms",
+        "scroll_direction": "down"
+      }
+    ]
+  }
+}

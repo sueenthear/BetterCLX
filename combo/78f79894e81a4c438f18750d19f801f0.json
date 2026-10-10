@@ -1,0 +1,72 @@
+{
+  "version": 2,
+  "group": {
+    "group_id": "78f79894e81a4c438f18750d19f801f0",
+    "name": "小跳中断",
+    "enabled": false,
+    "triggers": [
+      {
+        "trigger_id": "43a9dc99311e41f1958c7c91e16d58a5",
+        "key_name": "ALT",
+        "mode": "toggle"
+      },
+      {
+        "trigger_id": "8edc2d90e1014b9685699741e8ec7e04",
+        "key_name": "鼠标右键",
+        "mode": "hold"
+      }
+    ],
+    "operations": [
+      {
+        "operation_id": "932a4a9d57a640a0a468e1a274036823",
+        "operation_type": "keyboard",
+        "key_name": "SPACE",
+        "keyboard_action": "press",
+        "delay_ms": 100,
+        "delay_value": 100.0,
+        "delay_unit": "ms",
+        "scroll_direction": "up"
+      },
+      {
+        "operation_id": "470a92d7e85b49518ccdbdd6cdce67c1",
+        "operation_type": "keyboard",
+        "key_name": "SPACE",
+        "keyboard_action": "release",
+        "delay_ms": 100,
+        "delay_value": 100.0,
+        "delay_unit": "ms",
+        "scroll_direction": "up"
+      },
+      {
+        "operation_id": "57005d7c146a40ea8f887a399e8f01f1",
+        "operation_type": "keyboard",
+        "key_name": "E",
+        "keyboard_action": "press",
+        "delay_ms": 100,
+        "delay_value": 100.0,
+        "delay_unit": "ms",
+        "scroll_direction": "up"
+      },
+      {
+        "operation_id": "a561ca950eda46968428af5a7fa6cf74",
+        "operation_type": "keyboard",
+        "key_name": "E",
+        "keyboard_action": "release",
+        "delay_ms": 100,
+        "delay_value": 100.0,
+        "delay_unit": "ms",
+        "scroll_direction": "up"
+      },
+      {
+        "operation_id": "76347d4435cc46f9bde6c48aa086869c",
+        "operation_type": "delay",
+        "key_name": "",
+        "keyboard_action": "press",
+        "delay_ms": 2000,
+        "delay_value": 2.0,
+        "delay_unit": "s",
+        "scroll_direction": "up"
+      }
+    ]
+  }
+}

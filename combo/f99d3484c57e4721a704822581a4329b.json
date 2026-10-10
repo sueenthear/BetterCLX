@@ -1,0 +1,52 @@
+{
+  "version": 2,
+  "group": {
+    "group_id": "f99d3484c57e4721a704822581a4329b",
+    "name": "绝学触发",
+    "enabled": false,
+    "triggers": [
+      {
+        "trigger_id": "788b18a275514bf2b9f4030f64e667c9",
+        "key_name": "鼠标右键",
+        "mode": "hold"
+      },
+      {
+        "trigger_id": "37a5a2a20dfd426496b05c58aebb1d3b",
+        "key_name": "ALT",
+        "mode": "toggle"
+      }
+    ],
+    "operations": [
+      {
+        "operation_id": "17679ec7372044fbb20b7246315ae269",
+        "operation_type": "delay",
+        "key_name": "",
+        "keyboard_action": "press",
+        "delay_ms": 5000,
+        "delay_value": 5.0,
+        "delay_unit": "s",
+        "scroll_direction": "up"
+      },
+      {
+        "operation_id": "28c4ad35736d4724b375a7c675cec8e3",
+        "operation_type": "keyboard",
+        "key_name": "R",
+        "keyboard_action": "press",
+        "delay_ms": 100,
+        "delay_value": 100.0,
+        "delay_unit": "ms",
+        "scroll_direction": "up"
+      },
+      {
+        "operation_id": "c178118700a5449cb6915ad72e862e16",
+        "operation_type": "keyboard",
+        "key_name": "R",
+        "keyboard_action": "release",
+        "delay_ms": 100,
+        "delay_value": 100.0,
+        "delay_unit": "ms",
+        "scroll_direction": "up"
+      }
+    ]
+  }
+}
