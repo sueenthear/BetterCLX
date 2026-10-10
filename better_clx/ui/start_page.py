@@ -38,11 +38,16 @@ class StartPage(QWidget):
 
     binding_requested = Signal()
 
-    def __init__(self, parent: QWidget | None = None) -> None:
+    def __init__(
+        self,
+        settings: AppSettings,
+        settings_store: SettingsStore,
+        parent: QWidget | None = None,
+    ) -> None:
         super().__init__(parent)
         self.setObjectName("startPage")
-        self.settings_store = SettingsStore()
-        self.settings: AppSettings = self.settings_store.load()
+        self.settings_store = settings_store
+        self.settings = settings
         self._script_cards: dict[str, ScriptLauncherCard] = {}
         self._build_ui()
 

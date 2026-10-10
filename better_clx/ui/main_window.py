@@ -62,7 +62,7 @@ class MainWindow(FluentWindow):
         self.setWindowIcon(QGuiApplication.instance().windowIcon())
 
         self.window_controller = WindowBindingController(self)
-        self.start_page = StartPage(self)
+        self.start_page = StartPage(self._app_settings, self._settings_store, self)
         self.binding_page = BindingPage(self.window_controller, self)
         self.combo_page = ComboPage(self.window_controller, self)
         self.auto_page = AutoPage(self)
@@ -188,6 +188,8 @@ class MainWindow(FluentWindow):
     def _force_close(self) -> None:
         self._allow_close = True
         self.close()
+        if not self.isVisible():
+            QGuiApplication.quit()
 
     def _auto_launch_game_if_needed(self) -> None:
         if self._app_settings.auto_launch_game and not game_process_running():

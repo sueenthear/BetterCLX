@@ -125,6 +125,14 @@ def ensure_admin() -> bool:
     return relaunch_as_admin()
 
 
+def show_duplicate_instance_message() -> None:
+    """Show the duplicate-launch message before Qt creates its application object."""
+    if os.name == "nt":
+        ctypes.windll.user32.MessageBoxW(None, "Better CLX 已经在运行中。", APP_NAME, 0x40)
+    else:
+        print(f"{APP_NAME} 已经在运行中。", file=sys.stderr)
+
+
 def main() -> int:
     lock = SingleInstanceLock()
     elevated_child = _UAC_FLAG in sys.argv
@@ -136,6 +144,8 @@ def main() -> int:
         if lock.handle is None and not lock.acquire(0):
             return 2
     elif not lock.acquire(0):
+        # A normal duplicate launch should explain why it exits instead of failing silently.
+        show_duplicate_instance_message()
         return 0
 
     try:
@@ -175,7 +185,10 @@ def main() -> int:
         if elapsed < 1.0:
             time.sleep(1.0 - elapsed)
         splash.close()
-        window.show()
+        window.showNormal()
+        window.raise_()
+        window.activateWindow()
+        window.setFocus()
         QTimer.singleShot(0, window.apply_saved_geometry)
         return app.exec()
     finally:
