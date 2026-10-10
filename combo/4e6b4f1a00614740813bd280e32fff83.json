@@ -3,7 +3,7 @@
   "group": {
     "group_id": "4e6b4f1a00614740813bd280e32fff83",
     "name": "全技能轮扫-1~9",
-    "enabled": false,
+    "enabled": true,
     "triggers": [
       {
         "trigger_id": "5749812b74ce41d9ad219dcc3aa22752",

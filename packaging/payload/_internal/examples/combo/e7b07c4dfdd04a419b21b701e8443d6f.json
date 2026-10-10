@@ -1,0 +1,142 @@
+{
+  "version": 2,
+  "group": {
+    "group_id": "e7b07c4dfdd04a419b21b701e8443d6f",
+    "name": "动如脱兔-ws反复",
+    "enabled": true,
+    "triggers": [
+      {
+        "trigger_id": "5f3c6c94270d418ca96e421eba11e71c",
+        "key_name": "鼠标右键",
+        "mode": "hold"
+      },
+      {
+        "trigger_id": "9113251ce39c414e8a1245d52fbab9e5",
+        "key_name": "ALT",
+        "mode": "toggle"
+      }
+    ],
+    "operations": [
+      {
+        "operation_id": "d7396e5faffb4a9c8f449468ab4443a5",
+        "operation_type": "keyboard",
+        "key_name": "W",
+        "keyboard_action": "press",
+        "delay_ms": 100,
+        "delay_value": 100.0,
+        "delay_unit": "ms",
+        "scroll_direction": "up"
+      },
+      {
+        "operation_id": "4093bc017d464c3187c35e5f97c6b920",
+        "operation_type": "delay",
+        "key_name": "",
+        "keyboard_action": "press",
+        "delay_ms": 100,
+        "delay_value": 100.0,
+        "delay_unit": "ms",
+        "scroll_direction": "up"
+      },
+      {
+        "operation_id": "9da2e1344f854be98c483bbf9d43907a",
+        "operation_type": "keyboard",
+        "key_name": "F",
+        "keyboard_action": "press",
+        "delay_ms": 100,
+        "delay_value": 100.0,
+        "delay_unit": "ms",
+        "scroll_direction": "up"
+      },
+      {
+        "operation_id": "dfe7050e66c746e18ed762191501c345",
+        "operation_type": "keyboard",
+        "key_name": "F",
+        "keyboard_action": "release",
+        "delay_ms": 100,
+        "delay_value": 100.0,
+        "delay_unit": "ms",
+        "scroll_direction": "up"
+      },
+      {
+        "operation_id": "14f255bb038b44e8bf4c8d3e5d298734",
+        "operation_type": "keyboard",
+        "key_name": "W",
+        "keyboard_action": "release",
+        "delay_ms": 100,
+        "delay_value": 100.0,
+        "delay_unit": "ms",
+        "scroll_direction": "up"
+      },
+      {
+        "operation_id": "d122f520e3b24d7e964491af0d2d229e",
+        "operation_type": "delay",
+        "key_name": "",
+        "keyboard_action": "press",
+        "delay_ms": 3600,
+        "delay_value": 3600.0,
+        "delay_unit": "ms",
+        "scroll_direction": "up"
+      },
+      {
+        "operation_id": "503278c9f67d4a849cf275c4a23bc7de",
+        "operation_type": "keyboard",
+        "key_name": "S",
+        "keyboard_action": "press",
+        "delay_ms": 100,
+        "delay_value": 100.0,
+        "delay_unit": "ms",
+        "scroll_direction": "up"
+      },
+      {
+        "operation_id": "0530c2dfaff64bb2a909a234ff751425",
+        "operation_type": "delay",
+        "key_name": "",
+        "keyboard_action": "press",
+        "delay_ms": 100,
+        "delay_value": 100.0,
+        "delay_unit": "ms",
+        "scroll_direction": "up"
+      },
+      {
+        "operation_id": "1f189162443a4156919d55a7a556fc1d",
+        "operation_type": "keyboard",
+        "key_name": "F",
+        "keyboard_action": "press",
+        "delay_ms": 100,
+        "delay_value": 100.0,
+        "delay_unit": "ms",
+        "scroll_direction": "up"
+      },
+      {
+        "operation_id": "06a077a5e26d476b83a9004463516ed0",
+        "operation_type": "keyboard",
+        "key_name": "F",
+        "keyboard_action": "release",
+        "delay_ms": 100,
+        "delay_value": 100.0,
+        "delay_unit": "ms",
+        "scroll_direction": "up"
+      },
+      {
+        "operation_id": "5ed552e1e1b64173ad8a0dbac94bbdba",
+        "operation_type": "keyboard",
+        "key_name": "S",
+        "keyboard_action": "release",
+        "delay_ms": 100,
+        "delay_value": 100.0,
+        "delay_unit": "ms",
+        "scroll_direction": "up"
+      },
+      {
+        "operation_id": "54765fbfc9324c508e176fcc8755c425",
+        "operation_type": "delay",
+        "key_name": "",
+        "keyboard_action": "press",
+        "delay_ms": 4000,
+        "delay_value": 4.0,
+        "delay_unit": "s",
+        "scroll_direction": "up"
+      }
+    ]
+  }
+}

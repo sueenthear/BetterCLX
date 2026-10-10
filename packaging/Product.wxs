@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Wix xmlns="http://wixtoolset.org/schemas/v4/wxs">
+  <Package
+    Name="Better CLX"
+    Manufacturer="sueenthear"
+    Version="$(var.ProductVersion)"
+    UpgradeCode="9E9A0E76-5A4E-4A50-A40B-74FD5A31B7B2"
+    Scope="perMachine">
+    <MajorUpgrade DowngradeErrorMessage="已安装更高版本的 Better CLX。" />
+    <MediaTemplate EmbedCab="yes" />
+    <StandardDirectory Id="ProgramFiles64Folder">
+      <Directory Id="INSTALLFOLDER" Name="Better CLX" />
+    </StandardDirectory>
+    <Feature Id="MainFeature" Title="Better CLX" Level="1">
+      <ComponentGroupRef Id="ProductComponents" />
+    </Feature>
+    <ComponentGroup Id="ProductComponents" Directory="INSTALLFOLDER">
+      <Files Include="**" />
+      <Component Id="ApplicationShortcutComponent">
+        <Shortcut Id="StartMenuShortcut" Directory="ProgramMenuFolder" Name="Better CLX" Target="[INSTALLFOLDER]BetterCLX.exe" WorkingDirectory="INSTALLFOLDER" />
+        <RemoveFolder Id="RemoveProgramMenuFolder" On="uninstall" />
+        <RegistryValue Root="HKCU" Key="Software\BetterCLX" Name="Installed" Type="integer" Value="1" KeyPath="yes" />
+      </Component>
+    </ComponentGroup>
+  </Package>
+</Wix>

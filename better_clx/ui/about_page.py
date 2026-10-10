@@ -3,14 +3,16 @@
 from __future__ import annotations
 
 from PySide6.QtCore import Qt, QUrl
-from PySide6.QtGui import QDesktopServices
+from PySide6.QtGui import QDesktopServices, QIcon
 from PySide6.QtWidgets import QHBoxLayout, QVBoxLayout, QWidget
 from qfluentwidgets import BodyLabel, CardWidget, CaptionLabel, FluentIcon, IconWidget, PushButton, StrongBodyLabel, SubtitleLabel
 
 from better_clx.config import APP_NAME, APP_VERSION
+from better_clx.runtime_paths import resource_path
 from better_clx.ui.theme import CONTENT_MARGIN, MUTED
 
 REPOSITORY_URL = "https://github.com/sueenthear/BetterCLX"
+STATIC_SITE_URL = "https://sueenthear.github.io/BetterCLX/"
 
 
 class AboutPage(QWidget):
@@ -32,7 +34,7 @@ class AboutPage(QWidget):
 
         identity = QHBoxLayout()
         identity.setSpacing(12)
-        icon = IconWidget(FluentIcon.APPLICATION, details)
+        icon = IconWidget(QIcon(str(resource_path("icon.ico"))), details)
         icon.setFixedSize(36, 36)
         identity.addWidget(icon)
         title_block = QVBoxLayout()
@@ -61,8 +63,21 @@ class AboutPage(QWidget):
         self.repository_button.clicked.connect(self.open_repository)
         repository_row.addWidget(self.repository_button)
         details_layout.addLayout(repository_row)
+
+        site_row = QHBoxLayout()
+        site_row.setSpacing(10)
+        site_row.addWidget(CaptionLabel("项目主页", details))
+        site_row.addStretch(1)
+        self.site_button = PushButton(FluentIcon.GLOBE, "打开静态网页", details)
+        self.site_button.setMinimumSize(140, 36)
+        self.site_button.clicked.connect(self.open_static_site)
+        site_row.addWidget(self.site_button)
+        details_layout.addLayout(site_row)
         root.addWidget(details)
         root.addStretch(1)
 
     def open_repository(self) -> None:
         QDesktopServices.openUrl(QUrl(REPOSITORY_URL))
+
+    def open_static_site(self) -> None:
+        QDesktopServices.openUrl(QUrl(STATIC_SITE_URL))

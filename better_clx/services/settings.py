@@ -77,6 +77,9 @@ class AppSettings:
     window_y: int | None = None
     window_width: int = 1080
     window_height: int = 720
+    auto_launch_game: bool = False
+    kill_games_on_close: bool = False
+    close_behavior: str = "confirm"
     scripts: list[ScriptConfig] = field(default_factory=list)
 
     def to_dict(self) -> dict[str, object]:
@@ -108,6 +111,9 @@ class AppSettings:
             window_y=_optional_int(data.get("window_y")),
             window_width=max(640, _safe_int(data.get("window_width"), 1080)),
             window_height=max(480, _safe_int(data.get("window_height"), 720)),
+            auto_launch_game=bool(data.get("auto_launch_game", False)),
+            kill_games_on_close=bool(data.get("kill_games_on_close", False)),
+            close_behavior=str(data.get("close_behavior") or "confirm") if str(data.get("close_behavior") or "confirm") in {"minimize", "confirm", "exit"} else "confirm",
             scripts=scripts,
         )
 

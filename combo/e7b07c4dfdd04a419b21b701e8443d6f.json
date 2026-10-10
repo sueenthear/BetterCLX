@@ -3,7 +3,7 @@
   "group": {
     "group_id": "e7b07c4dfdd04a419b21b701e8443d6f",
     "name": "动如脱兔-ws反复",
-    "enabled": false,
+    "enabled": true,
     "triggers": [
       {
         "trigger_id": "5f3c6c94270d418ca96e421eba11e71c",

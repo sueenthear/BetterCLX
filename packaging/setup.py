@@ -22,6 +22,9 @@ class Installer(tk.Tk):
         self.minsize(560, 390)
         self.maxsize(560, 390)
         self.resizable(False, False)
+        icon_path = BUNDLE_ROOT / "icon.ico"
+        if icon_path.is_file():
+            self.iconbitmap(default=str(icon_path))
         self.install_dir = tk.StringVar(value=str(DEFAULT_INSTALL_DIR))
         self.copy_examples = tk.BooleanVar(value=True)
         self.create_shortcut = tk.BooleanVar(value=True)
@@ -58,6 +61,11 @@ class Installer(tk.Tk):
         selected = filedialog.askdirectory(initialdir=self.install_dir.get(), title="选择安装目录")
         if selected:
             self.install_dir.set(selected)
+            executable = Path(selected) / "BetterCLX.exe"
+            if executable.is_file():
+                self.status.set("检测到已有 BetterCLX.exe，将更新程序并保留配置与 combo")
+            else:
+                self.status.set("已选择安装目录")
 
     def start_install(self) -> None:
         target = Path(self.install_dir.get().strip()).expanduser()
@@ -68,26 +76,42 @@ class Installer(tk.Tk):
             messagebox.showerror(APP_NAME, f"安装包缺少 payload：{PAYLOAD_DIR}")
             return
         self.install_button.configure(state="disabled")
-        threading.Thread(target=self._install, args=(target,), daemon=True).start()
+        copy_examples = self.copy_examples.get()
+        create_shortcut = self.create_shortcut.get()
+        threading.Thread(
+            target=self._install,
+            args=(target, copy_examples, create_shortcut),
+            daemon=True,
+        ).start()
 
-    def _install(self, target: Path) -> None:
+    @staticmethod
+    def _is_user_data(relative: Path) -> bool:
+        """Keep user settings and all existing combo data during an update."""
+        return relative.name in {"user_setting.json", "user_setting.ini"} or (
+            relative.parts and relative.parts[0].lower() == "combo"
+        )
+
+    def _install(self, target: Path, copy_examples: bool, create_shortcut: bool) -> None:
         try:
             target.mkdir(parents=True, exist_ok=True)
-            files = [p for p in PAYLOAD_DIR.rglob("*") if p.is_file()]
+            files = [
+                p for p in PAYLOAD_DIR.rglob("*")
+                if p.is_file() and not self._is_user_data(p.relative_to(PAYLOAD_DIR))
+            ]
             for index, source in enumerate(files, 1):
                 relative = source.relative_to(PAYLOAD_DIR)
                 destination = target / relative
                 destination.parent.mkdir(parents=True, exist_ok=True)
                 shutil.copy2(source, destination)
-                self.after(0, self._set_progress, index * 100 / len(files), f"正在复制文件 {index}/{len(files)}")
+                self.after(0, self._set_progress, index * 100 / len(files), f"正在更新文件 {index}/{len(files)}")
 
-            if self.copy_examples.get():
+            if copy_examples:
                 examples = PAYLOAD_DIR / "examples" / "combo"
                 combo = target / "combo"
-                if examples.is_dir() and not (combo / "__all__.json").exists():
-                    shutil.copytree(examples, combo, dirs_exist_ok=True)
+                if examples.is_dir() and not combo.exists():
+                    shutil.copytree(examples, combo)
 
-            if self.create_shortcut.get():
+            if create_shortcut:
                 self._create_shortcut(target / "BetterCLX.exe")
 
             self.after(0, self._finish, target)

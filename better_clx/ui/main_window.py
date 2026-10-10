@@ -7,19 +7,22 @@ import os
 from ctypes import wintypes
 from datetime import datetime
 
-from PySide6.QtCore import QRect
-from PySide6.QtGui import QGuiApplication
-from PySide6.QtWidgets import QWidget
+from PySide6.QtCore import QTimer, QRect
+from PySide6.QtGui import QAction, QGuiApplication, QIcon
+from PySide6.QtWidgets import QMenu, QMessageBox, QSystemTrayIcon, QWidget
 from qfluentwidgets import FluentIcon, FluentWindow, InfoBar, NavigationItemPosition
 
 from better_clx.config import APP_NAME
 from better_clx.models import GameWindow
+from better_clx.services.launcher import game_process_running, kill_game_processes, launch_game
 from better_clx.services.settings import SettingsStore
 from better_clx.services.monitor import WindowMonitor
 from better_clx.services.window_actions import WindowBindingController
 from better_clx.ui.about_page import AboutPage
+from better_clx.ui.auto_page import AutoPage
 from better_clx.ui.binding_page import BindingPage
 from better_clx.ui.combo_page import ComboPage
+from better_clx.ui.settings_page import SettingsPage
 from better_clx.ui.start_page import StartPage
 from better_clx.ui.theme import WINDOW_MIN_HEIGHT, WINDOW_MIN_WIDTH
 
@@ -46,6 +49,7 @@ class MainWindow(FluentWindow):
     def __init__(self) -> None:
         # FluentWindow construction can dispatch nativeEvent before subclass setup finishes.
         self._hotkey_registered = False
+        self._allow_close = False
         self._hotkey_id = 1
         self._user32 = None
         super().__init__()
@@ -61,8 +65,11 @@ class MainWindow(FluentWindow):
         self.start_page = StartPage(self)
         self.binding_page = BindingPage(self.window_controller, self)
         self.combo_page = ComboPage(self.window_controller, self)
+        self.auto_page = AutoPage(self)
         self.about_page = AboutPage(self)
+        self.settings_page = SettingsPage(self._app_settings, self._settings_store, self)
         self._init_navigation()
+        self._setup_tray()
 
         self.monitor = WindowMonitor(self)
         self.monitor.windows_changed.connect(self._on_windows_changed)
@@ -72,6 +79,7 @@ class MainWindow(FluentWindow):
         self._hotkey_registered = False
         self._register_fullscreen_hotkey()
         self.monitor.start()
+        QTimer.singleShot(1200, self._auto_launch_game_if_needed)
         # FluentWindow may adjust geometry while interfaces are added; apply the
         # persisted size once more after the complete layout has been built.
         self._restore_geometry()
@@ -134,11 +142,58 @@ class MainWindow(FluentWindow):
             position=NavigationItemPosition.TOP,
         )
         self.addSubInterface(
+            self.auto_page,
+            FluentIcon.SYNC,
+            "自动",
+            position=NavigationItemPosition.TOP,
+        )
+        self.addSubInterface(
             self.about_page,
             FluentIcon.INFO,
             "关于",
             position=NavigationItemPosition.BOTTOM,
         )
+        self.addSubInterface(
+            self.settings_page,
+            FluentIcon.SETTING,
+            "设置",
+            position=NavigationItemPosition.BOTTOM,
+        )
+
+    def _setup_tray(self) -> None:
+        self.tray_icon = QSystemTrayIcon(self)
+        self.tray_icon.setIcon(QGuiApplication.instance().windowIcon())
+        self.tray_icon.setToolTip(APP_NAME)
+        menu = QMenu(self)
+        show_action = QAction("显示窗口", self)
+        show_action.triggered.connect(self._restore_from_tray)
+        quit_action = QAction("退出程序", self)
+        quit_action.triggered.connect(self._force_close)
+        menu.addAction(show_action)
+        menu.addSeparator()
+        menu.addAction(quit_action)
+        self.tray_icon.setContextMenu(menu)
+        self.tray_icon.activated.connect(
+            lambda reason: self._restore_from_tray()
+            if reason == QSystemTrayIcon.ActivationReason.DoubleClick
+            else None
+        )
+        self.tray_icon.show()
+
+    def _restore_from_tray(self) -> None:
+        self.showNormal()
+        self.activateWindow()
+        self.raise_()
+
+    def _force_close(self) -> None:
+        self._allow_close = True
+        self.close()
+
+    def _auto_launch_game_if_needed(self) -> None:
+        if self._app_settings.auto_launch_game and not game_process_running():
+            result = launch_game(self._app_settings)
+            if not result.success:
+                InfoBar.warning("自动启动游戏失败", result.message, parent=self)
 
     def _register_fullscreen_hotkey(self) -> None:
         if os.name != "nt":
@@ -174,10 +229,31 @@ class MainWindow(FluentWindow):
         return super().nativeEvent(eventType, message)
 
     def closeEvent(self, event) -> None:  # noqa: N802 - Qt API name
+        if not self._allow_close:
+            behavior = self._app_settings.close_behavior
+            if behavior == "minimize":
+                event.ignore()
+                self.hide()
+                return
+            if behavior == "confirm":
+                answer = QMessageBox.question(
+                    self,
+                    "退出 Better CLX",
+                    "确定要关闭 Better CLX 吗？",
+                    QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
+                    QMessageBox.StandardButton.No,
+                )
+                if answer != QMessageBox.StandardButton.Yes:
+                    event.ignore()
+                    return
         self._unregister_fullscreen_hotkey()
         if self.window_controller.is_fullscreen:
             self.window_controller.restore_fullscreen()
         self.combo_page.shutdown()
         self.monitor.stop()
+        if self._app_settings.kill_games_on_close:
+            kill_game_processes()
+        if hasattr(self, "tray_icon"):
+            self.tray_icon.hide()
         self._save_geometry()
         super().closeEvent(event)

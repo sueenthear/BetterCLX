@@ -1,6 +1,6 @@
 """Shared visual tokens for the Fluent interface."""
 
-WINDOW_MIN_WIDTH = 920
+WINDOW_MIN_WIDTH = 1100
 WINDOW_MIN_HEIGHT = 620
 CONTENT_MARGIN = (36, 28, 36, 28)
 

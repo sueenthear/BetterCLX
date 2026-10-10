@@ -1,6 +1,6 @@
 [project]
 name = "better-clx"
-version = "0.1.0"
+version = "0.1.1"
 description = "一梦江湖多实例窗口监控与启动面板"
 readme = "README.md"
 requires-python = ">=3.12"

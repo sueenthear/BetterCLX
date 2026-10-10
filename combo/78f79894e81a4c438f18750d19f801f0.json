@@ -3,7 +3,7 @@
   "group": {
     "group_id": "78f79894e81a4c438f18750d19f801f0",
     "name": "小跳中断",
-    "enabled": false,
+    "enabled": true,
     "triggers": [
       {
         "trigger_id": "43a9dc99311e41f1958c7c91e16d58a5",

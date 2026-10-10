@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from PySide6.QtCore import QEvent, QMimeData, QPoint, Qt, Signal
 from PySide6.QtGui import QDrag, QKeyEvent, QMouseEvent, QWheelEvent
-from PySide6.QtWidgets import QApplication, QComboBox, QDoubleSpinBox, QHBoxLayout, QLabel, QVBoxLayout, QWidget
+from PySide6.QtWidgets import QApplication, QComboBox, QDoubleSpinBox, QHBoxLayout, QLabel, QSizePolicy, QVBoxLayout, QWidget
 from qfluentwidgets import BodyLabel, ComboBox, FluentIcon, LineEdit, PushButton, StrongBodyLabel
 
 from better_clx.combo_models import ComboOperation, KeyboardAction, OperationType, ScrollDirection
@@ -55,6 +55,7 @@ class DragHandle(QLabel):
 class KeyListenButton(PushButton):
     key_captured = Signal(str)
     mouse_captured = Signal(str)
+    listening_changed = Signal(bool)
 
     def __init__(self, continuous: bool, parent: QWidget | None = None) -> None:
         super().__init__(parent)
@@ -66,6 +67,7 @@ class KeyListenButton(PushButton):
 
     def _start_listening(self) -> None:
         self.listening = True
+        self.listening_changed.emit(True)
         self.setText("监听中")
         app = QApplication.instance()
         if app is not None:
@@ -135,23 +137,27 @@ class KeyListenButton(PushButton):
         super().focusOutEvent(event)
 
     def stop_listening(self) -> None:
+        was_listening = self.listening
         app = QApplication.instance()
         if app is not None:
             app.removeEventFilter(self)
         self.listening = False
         self.setText("监听获取")
+        if was_listening:
+            self.listening_changed.emit(False)
 
 
 class OperationEditor(QWidget):
     changed = Signal()
     remove_requested = Signal(str)
+    listening_changed = Signal(bool)
 
     def __init__(self, operation: ComboOperation, index: int, parent: QWidget | None = None) -> None:
         super().__init__(parent)
         self.operation = operation
         self.index = index
         self.setObjectName("operationEditor")
-        self.setMinimumHeight(118)
+        self.setMinimumHeight(72)
         self.setStyleSheet(
             "QWidget#operationEditor { border: 1px solid rgba(128,128,128,45); "
             "border-radius: 8px; background: rgba(255,255,255,25); }"
@@ -160,33 +166,32 @@ class OperationEditor(QWidget):
         self._rebuild_detail()
 
     def _build_ui(self) -> None:
-        root = QVBoxLayout(self)
-        root.setContentsMargins(14, 10, 14, 10)
+        # Keep the operation header and its editable details in one horizontal row.
+        root = QHBoxLayout(self)
+        root.setContentsMargins(10, 6, 10, 6)
         root.setSpacing(7)
-        header = QHBoxLayout()
-        header.setSpacing(8)
         self.drag_handle = DragHandle(self.operation.operation_id, self)
         self.drag_handle.setStyleSheet(f"color: {MUTED}; font-size: 16px;")
-        header.addWidget(self.drag_handle)
+        root.addWidget(self.drag_handle)
         self.index_label = StrongBodyLabel(f"动作 {self.index}", self)
-        header.addWidget(self.index_label)
+        root.addWidget(self.index_label)
         self.type_combo = ComboBox(self)
         self.type_combo.addItems([item.label for item in OperationType])
+        self.type_combo.setFixedWidth(96)
         self.type_combo.setCurrentIndex(list(OperationType).index(OperationType(self.operation.operation_type)))
         self.type_combo.currentIndexChanged.connect(self._on_type_changed)
-        header.addWidget(self.type_combo)
-        header.addStretch(1)
+        root.addWidget(self.type_combo)
+        self.detail_host = QWidget(self)
+        self.detail_host.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
+        self.detail_layout = QHBoxLayout(self.detail_host)
+        self.detail_layout.setContentsMargins(0, 0, 0, 0)
+        self.detail_layout.setSpacing(6)
+        root.addWidget(self.detail_host, 1)
         self.remove_button = PushButton("删除", self)
-        self.remove_button.setFixedSize(72, 32)
+        self.remove_button.setFixedSize(64, 30)
         self.remove_button.setStyleSheet("QPushButton { color: #b42318; }")
         self.remove_button.clicked.connect(lambda: self.remove_requested.emit(self.operation.operation_id))
-        header.addWidget(self.remove_button)
-        root.addLayout(header)
-        self.detail_host = QWidget(self)
-        self.detail_layout = QHBoxLayout(self.detail_host)
-        self.detail_layout.setContentsMargins(26, 0, 0, 0)
-        self.detail_layout.setSpacing(8)
-        root.addWidget(self.detail_host)
+        root.addWidget(self.remove_button)
 
     def _clear_detail(self) -> None:
         while self.detail_layout.count():
@@ -201,26 +206,35 @@ class OperationEditor(QWidget):
             self.detail_layout.addWidget(BodyLabel("按键", self.detail_host))
             self.key_edit = LineEdit(self.detail_host)
             self.key_edit.setReadOnly(True)
-            self.key_edit.setPlaceholderText("监听获取")
+            self.key_edit.setPlaceholderText("未设置")
             self.key_edit.setText(self.operation.key_name)
+            self.key_edit.setMinimumWidth(72)
+            self.key_edit.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
             self.detail_layout.addWidget(self.key_edit, 1)
             listen = KeyListenButton(False, self.detail_host)
+            listen.setFixedWidth(82)
             listen.key_captured.connect(self._set_key_name)
             listen.mouse_captured.connect(self._set_key_name)
+            listen.listening_changed.connect(self.listening_changed)
             self.detail_layout.addWidget(listen)
-            self.detail_layout.addWidget(BodyLabel("动作", self.detail_host))
+            action_label = BodyLabel("动作", self.detail_host)
+            action_label.setFixedWidth(32)
+            self.detail_layout.addWidget(action_label)
             action = ComboBox(self.detail_host)
             action.addItems(["按下", "抬起"])
+            action.setFixedWidth(72)
             action.setCurrentIndex(0 if self.operation.keyboard_action == KeyboardAction.PRESS.value else 1)
             action.currentIndexChanged.connect(self._set_keyboard_action)
             self.detail_layout.addWidget(action)
         elif kind is OperationType.DELAY:
-            self.detail_layout.addWidget(BodyLabel("等待时长", self.detail_host))
+            delay_label = BodyLabel("等待", self.detail_host)
+            delay_label.setFixedWidth(38)
+            self.detail_layout.addWidget(delay_label)
             self.delay_spin = NoWheelDoubleSpinBox(self.detail_host)
             self.delay_spin.setRange(0.0, 3_600.0)
             self.delay_spin.setDecimals(2)
             self.delay_spin.setSingleStep(0.1)
-            self.delay_spin.setFixedHeight(32)
+            self.delay_spin.setFixedSize(82, 32)
             self.delay_spin.setValue(self.operation.delay_value)
             self.delay_spin.valueChanged.connect(self._set_delay_value)
             self.detail_layout.addWidget(self.delay_spin)
@@ -236,6 +250,7 @@ class OperationEditor(QWidget):
             self.detail_layout.addWidget(BodyLabel("滚轮", self.detail_host))
             scroll = ComboBox(self.detail_host)
             scroll.addItems(["中键上滚", "中键下滚"])
+            scroll.setFixedWidth(112)
             scroll.setCurrentIndex(0 if self.operation.scroll_direction == ScrollDirection.UP.value else 1)
             scroll.currentIndexChanged.connect(self._set_scroll)
             self.detail_layout.addWidget(scroll)

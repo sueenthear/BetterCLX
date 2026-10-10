@@ -39,6 +39,7 @@ class ComboRuntime(QObject):
         self.controller = controller
         self.input = input_backend or Win32Input()
         self.groups: list[ComboGroup] = []
+        self.enabled = True
         self._states: dict[str, _GroupState] = {}
         self._key_owners: dict[tuple[int, str], set[str]] = {}
         self._timer = QTimer(self)
@@ -59,6 +60,12 @@ class ComboRuntime(QObject):
     def start(self) -> None:
         self._timer.start()
 
+    def set_enabled(self, enabled: bool) -> None:
+        self.enabled = bool(enabled)
+        if not self.enabled:
+            self.release_all()
+        self.status_changed.emit("连招总开关：已开启" if self.enabled else "连招总开关：已关闭")
+
     def stop(self) -> None:
         self._timer.stop()
         self.release_all()
@@ -66,8 +73,6 @@ class ComboRuntime(QObject):
     def release_all(self) -> None:
         for group_id, state in self._states.items():
             self._release_group_keys(group_id, state)
-            if state.running:
-                self.group_running_changed.emit(group_id, False)
             for trigger_state in state.triggers.values():
                 trigger_state.previous_down = False
                 trigger_state.toggle_active = False
@@ -84,6 +89,8 @@ class ComboRuntime(QObject):
         self.release_all()
 
     def tick(self) -> None:
+        if not self.enabled:
+            return
         hwnd = self.controller.bound_hwnd
         if not hwnd or not self.input.is_window(hwnd):
             self.release_all()
@@ -134,8 +141,7 @@ class ComboRuntime(QObject):
         state.output_hwnd = hwnd
         state.next_operation = 0
         state.deadline = 0.0
-        self.group_running_changed.emit(group.group_id, True)
-        self.status_changed.emit(f"{group.name} · 触发中")
+        self.status_changed.emit(f"{group.name} · 已触发")
 
     def _advance_sequence(self, group: ComboGroup, state: _GroupState, hwnd: int, now: float) -> None:
         if not any(s.toggle_active or s.hold_active for s in state.triggers.values()):
@@ -163,8 +169,9 @@ class ComboRuntime(QObject):
 
     def _press_key(self, group_id: str, state: _GroupState, hwnd: int, key: str) -> None:
         owners = self._key_owners.setdefault((hwnd, key), set())
+        sent = True
         if not owners:
-            self.input.send_key(hwnd, key, KeyboardAction.PRESS.value)
+            sent = bool(self.input.send_key(hwnd, key, KeyboardAction.PRESS.value))
         owners.add(group_id)
         state.held_output_keys.add(key)
 
@@ -192,5 +199,4 @@ class ComboRuntime(QObject):
         state.running = False
         state.next_operation = 0
         state.deadline = 0.0
-        self.group_running_changed.emit(group.group_id, False)
         self.status_changed.emit(f"{group.name} · 已停止")

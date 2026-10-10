@@ -98,6 +98,43 @@ def launch_game(settings: AppSettings) -> LaunchResult:
     return run_as_admin(executable, game_dir)
 
 
+def game_process_running() -> bool:
+    """Return whether any supported game process is currently running."""
+    if os.name != "nt":
+        return False
+    for process_name in ("wyclx64.exe", "wyclx.exe"):
+        result = subprocess.run(
+            ["tasklist", "/FI", f"IMAGENAME eq {process_name}", "/NH"],
+            capture_output=True,
+            text=True,
+            creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0),
+            check=False,
+        )
+        if process_name.lower() in result.stdout.lower():
+            return True
+    return False
+
+
+def kill_game_processes() -> LaunchResult:
+    """Terminate all supported game processes during application shutdown."""
+    if os.name != "nt":
+        return LaunchResult(False, "结束游戏进程仅支持 Windows")
+    errors: list[str] = []
+    for process_name in ("wyclx64.exe", "wyclx.exe"):
+        result = subprocess.run(
+            ["taskkill", "/F", "/IM", process_name],
+            capture_output=True,
+            text=True,
+            creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0),
+            check=False,
+        )
+        if result.returncode not in (0, 128):
+            errors.append(process_name)
+    if errors:
+        return LaunchResult(False, f"结束游戏进程失败: {', '.join(errors)}")
+    return LaunchResult(True, "已结束游戏进程")
+
+
 def launch_script(script: ScriptConfig) -> LaunchResult:
     """Launch one script with its own working directory."""
     if not script.path:

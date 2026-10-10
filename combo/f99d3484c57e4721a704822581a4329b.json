@@ -3,7 +3,7 @@
   "group": {
     "group_id": "f99d3484c57e4721a704822581a4329b",
     "name": "绝学触发",
-    "enabled": false,
+    "enabled": true,
     "triggers": [
       {
         "trigger_id": "788b18a275514bf2b9f4030f64e667c9",

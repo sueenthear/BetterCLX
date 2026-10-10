@@ -102,6 +102,8 @@ class ComboPage(QWidget):
         self.runtime = ComboRuntime(controller, self)
         self.runtime.set_groups(self.groups)
         self.runtime.group_running_changed.connect(self._on_group_running_changed)
+        self._listening_count = 0
+        self._runtime_enabled_before_listening = True
         self.runtime.start()
         self._group_rows: dict[str, ComboGroupRow] = {}
         self._operation_editors: dict[str, OperationEditor] = {}
@@ -139,6 +141,16 @@ class ComboPage(QWidget):
         group_heading = QHBoxLayout()
         group_heading.addWidget(StrongBodyLabel("连招组", self.group_panel))
         group_heading.addStretch(1)
+        group_heading.addWidget(BodyLabel("总开关", self.group_panel))
+        self.runtime_enabled_switch = SwitchButton("", self.group_panel)
+        self.runtime_enabled_switch.setOnText("")
+        self.runtime_enabled_switch.setOffText("")
+        self.runtime_enabled_switch.setMinimumWidth(58)
+        self.runtime_enabled_switch.setFixedHeight(24)
+        self.runtime_enabled_switch.setToolTip("监听按键时会临时关闭，监听结束后恢复")
+        self.runtime_enabled_switch.setChecked(True)
+        self.runtime_enabled_switch.checkedChanged.connect(self._set_runtime_enabled)
+        group_heading.addWidget(self.runtime_enabled_switch)
         self.group_count = CaptionLabel("0", self.group_panel)
         group_heading.addWidget(self.group_count)
         group_root.addLayout(group_heading)
@@ -268,6 +280,7 @@ class ComboPage(QWidget):
         for group in self.groups:
             item = QListWidgetItem()
             item.setData(Qt.ItemDataRole.UserRole, group.group_id)
+            # Focused selection is separate from the runtime "running" state.
             row = ComboGroupRow(group, False, self.group_list)
             item.setSizeHint(QSize(0, max(row.sizeHint().height(), row.minimumHeight())))
             self.group_list.addItem(item)
@@ -280,6 +293,7 @@ class ComboPage(QWidget):
             row.export_button.clicked.connect(lambda _checked=False, group_id=group.group_id: self.select_group(group_id))
             row.delete_button.clicked.connect(lambda _checked=False, group_id=group.group_id: self.select_group(group_id))
             self.group_list.setItemWidget(item, row)
+            item.setSizeHint(QSize(0, row.minimumHeight()))
             self._group_rows[group.group_id] = row
         self.group_count.setText(str(len(self.groups)))
         if self.active_group_id and self.active_group_id not in {group.group_id for group in self.groups}:
@@ -295,10 +309,18 @@ class ComboPage(QWidget):
         return super().eventFilter(obj, event)
 
     def _highlight_selected_group(self) -> None:
-        for group_id, row in self._group_rows.items():
+        for index in range(self.group_list.count()):
+            item = self.group_list.item(index)
+            group_id = item.data(Qt.ItemDataRole.UserRole)
+            row = self._group_rows.get(group_id)
+            if row is None:
+                continue
+            focused = group_id == self.active_group_id
+            row.set_focused(focused)
+            item.setSizeHint(QSize(0, row.minimumHeight()))
             row.setStyleSheet(
                 "QWidget { border-radius: 6px; background: rgba(0, 120, 215, 38); }"
-                if group_id == self.active_group_id
+                if focused
                 else "QWidget { border-radius: 6px; background: transparent; }"
             )
 
@@ -331,6 +353,9 @@ class ComboPage(QWidget):
         self.group_enabled_switch.blockSignals(True)
         self.group_enabled_switch.setChecked(group.enabled)
         self.group_enabled_switch.blockSignals(False)
+        self.runtime_enabled_switch.blockSignals(True)
+        self.runtime_enabled_switch.setChecked(self.runtime.enabled)
+        self.runtime_enabled_switch.blockSignals(False)
         self._render_trigger_rows(group)
         for index, operation in enumerate(group.operations, start=1):
             item = QListWidgetItem()
@@ -338,6 +363,7 @@ class ComboPage(QWidget):
             editor = OperationEditor(operation, index, self.operation_list)
             editor.changed.connect(self._save_active_group)
             editor.remove_requested.connect(self.remove_operation)
+            editor.listening_changed.connect(self._on_listening_changed)
             # Item height must respect the editor's minimum height, otherwise the
             # embedded card is taller than its row and neighbouring rows overlap.
             item.setSizeHint(QSize(0, max(editor.sizeHint().height(), editor.minimumHeight())))
@@ -473,6 +499,7 @@ class ComboPage(QWidget):
             listen.setFixedSize(112, 32)
             listen.key_captured.connect(lambda key, trigger_id=trigger.trigger_id: self._set_trigger_key(trigger_id, key))
             listen.mouse_captured.connect(lambda key, trigger_id=trigger.trigger_id: self._set_trigger_key(trigger_id, key))
+            listen.listening_changed.connect(self._on_listening_changed)
             row.addWidget(listen, 0, 1)
             mode = ComboBox(row_widget)
             mode.addItems(["按住", "切换"])
@@ -526,6 +553,27 @@ class ComboPage(QWidget):
         self._save_all()
         self._render_editor()
 
+    def _set_runtime_enabled(self, enabled: bool) -> None:
+        self.runtime.set_enabled(enabled)
+
+    def _on_listening_changed(self, listening: bool) -> None:
+        if listening:
+            if self._listening_count == 0:
+                self._runtime_enabled_before_listening = self.runtime.enabled
+                self.runtime.set_enabled(False)
+                self.runtime_enabled_switch.blockSignals(True)
+                self.runtime_enabled_switch.setChecked(False)
+                self.runtime_enabled_switch.blockSignals(False)
+            self._listening_count += 1
+            return
+        self._listening_count = max(0, self._listening_count - 1)
+        if self._listening_count == 0:
+            restored = self._runtime_enabled_before_listening
+            self.runtime.set_enabled(restored)
+            self.runtime_enabled_switch.blockSignals(True)
+            self.runtime_enabled_switch.setChecked(restored)
+            self.runtime_enabled_switch.blockSignals(False)
+
     def _set_group_enabled(self, enabled: bool) -> None:
         group = self._active_group()
         if group is None:
@@ -536,7 +584,7 @@ class ComboPage(QWidget):
             row.enabled_switch.blockSignals(True)
             row.enabled_switch.setChecked(enabled)
             row.enabled_switch.blockSignals(False)
-            row.set_active(row.active)
+            row.set_active(row.active if enabled else False)
         self._save_all()
 
     def _on_group_enabled_changed(self, group_id: str, enabled: bool) -> None:
@@ -550,7 +598,7 @@ class ComboPage(QWidget):
             self.group_enabled_switch.blockSignals(False)
         row = self._group_rows.get(group_id)
         if row is not None:
-            row.set_active(row.active)
+            row.set_active(row.active if enabled else False)
         self._save_all()
 
     def _add_operation_from_menu(self, index: int) -> None:

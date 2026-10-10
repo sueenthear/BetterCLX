@@ -20,59 +20,69 @@ class ComboGroupRow(QWidget):
         super().__init__(parent)
         self.group = group
         self.active = active
-        self.setMinimumHeight(86)
+        self.setMinimumHeight(42)
         self.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
 
         root = QVBoxLayout(self)
-        root.setContentsMargins(8, 7, 8, 7)
-        root.setSpacing(5)
+        root.setContentsMargins(8, 5, 8, 5)
+        root.setSpacing(4)
 
+        title_row = QHBoxLayout()
+        title_row.setContentsMargins(0, 0, 0, 0)
+        title_row.setSpacing(6)
+        self.status_dot = QLabel("●", self)
+        self.status_dot.setFixedWidth(14)
+        title_row.addWidget(self.status_dot)
         self.name_label = QLabel(group.name or "未命名连招组", self)
         self.name_label.setToolTip(group.name)
         self.name_label.setMinimumHeight(22)
-        root.addWidget(self.name_label)
+        title_row.addWidget(self.name_label, 1)
+        self.state_label = QLabel(self)
+        title_row.addWidget(self.state_label)
+        root.addLayout(title_row)
 
-        controls = QHBoxLayout()
-        controls.setContentsMargins(0, 0, 0, 0)
-        controls.setSpacing(6)
-
-        self.state_label = QLabel("运行中" if active else ("已启用" if group.enabled else "已停用"), self)
-        self.state_label.setStyleSheet(f"color: {'#16803c' if active else MUTED}; font-size: 11px;")
-        controls.addWidget(self.state_label, 1)
-
-        self.enabled_switch = SwitchButton("", self)
+        self.controls = QWidget(self)
+        controls = QHBoxLayout(self.controls)
+        controls.setContentsMargins(20, 0, 0, 0)
+        controls.setSpacing(5)
+        self.enabled_switch = SwitchButton("", self.controls)
         self.enabled_switch.setOnText("")
         self.enabled_switch.setOffText("")
-        self.enabled_switch.setMinimumWidth(58)
-        self.enabled_switch.setFixedHeight(24)
+        self.enabled_switch.setMinimumWidth(54)
+        self.enabled_switch.setFixedHeight(22)
         self.enabled_switch.setToolTip("启用/停用连招组")
         self.enabled_switch.setChecked(group.enabled)
         self.enabled_switch.checkedChanged.connect(lambda value: self.enabled_changed.emit(group.group_id, value))
-        controls.addWidget(self.enabled_switch, 0, Qt.AlignmentFlag.AlignVCenter)
-
-        self.export_button = PushButton("分享", self)
-        self.export_button.setToolTip("导出连招组")
-        self.export_button.setFixedSize(54, 32)
-        self.export_button.setStyleSheet("QPushButton { padding: 0 4px; }")
+        controls.addWidget(self.enabled_switch)
+        self.export_button = PushButton("分享", self.controls)
+        self.export_button.setFixedSize(52, 28)
         self.export_button.clicked.connect(lambda: self.export_requested.emit(group.group_id))
         controls.addWidget(self.export_button)
-
-        self.delete_button = PushButton("删除", self)
-        self.delete_button.setToolTip("删除连招组")
-        self.delete_button.setFixedSize(54, 32)
-        self.delete_button.setStyleSheet(
-            "QPushButton { color: #b42318; padding: 0 4px; } "
-            "QPushButton:hover { color: #8f1d14; background: #fee4e2; }"
-        )
+        self.delete_button = PushButton("删除", self.controls)
+        self.delete_button.setFixedSize(52, 28)
+        self.delete_button.setStyleSheet("QPushButton { color: #b42318; }")
         self.delete_button.clicked.connect(lambda: self.delete_requested.emit(group.group_id))
         controls.addWidget(self.delete_button)
-        root.addLayout(controls)
+        controls.addStretch(1)
+        root.addWidget(self.controls)
         self.set_active(active)
+        self.set_focused(False)
 
     def set_active(self, active: bool) -> None:
         self.active = active
-        self.state_label.setText("运行中" if active else ("已启用" if self.group.enabled else "已停用"))
-        self.state_label.setStyleSheet(f"color: {'#16803c' if active else MUTED}; font-size: 11px;")
+        if active and self.group.enabled:
+            state_text, color = "运行中", "#16803c"
+        elif self.group.enabled:
+            state_text, color = "已启用", "#1677ff"
+        else:
+            state_text, color = "已停用", "#b42318"
+        self.state_label.setText(state_text)
+        self.state_label.setStyleSheet(f"color: {color}; font-size: 11px;")
+        self.status_dot.setStyleSheet(f"color: {color}; font-size: 13px;")
+
+    def set_focused(self, focused: bool) -> None:
+        self.controls.setVisible(focused)
+        self.setMinimumHeight(74 if focused else 42)
 
     def mousePressEvent(self, event) -> None:  # noqa: N802 - Qt API name
         super().mousePressEvent(event)
