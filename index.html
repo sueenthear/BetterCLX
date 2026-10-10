@@ -1,0 +1,97 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Better CLX，一梦江湖窗口管理、连招编辑与自动化工具。">
+  <title>Better CLX | 一梦江湖工具</title>
+  <link rel="icon" href="icon.ico">
+  <style>
+    :root { color-scheme: dark; --bg:#10151b; --panel:#18212b; --line:#2b3947; --text:#edf3f7; --muted:#9aabb9; --accent:#21c7b7; --accent2:#6ee7db; }
+    * { box-sizing:border-box; }
+    html { scroll-behavior:smooth; }
+    body { margin:0; color:var(--text); background:var(--bg); font-family: "Segoe UI", "Microsoft YaHei", sans-serif; line-height:1.6; }
+    a { color:inherit; }
+    .nav { position:sticky; top:0; z-index:5; display:flex; justify-content:space-between; align-items:center; padding:16px clamp(20px,5vw,72px); background:rgba(16,21,27,.88); border-bottom:1px solid rgba(255,255,255,.08); backdrop-filter:blur(16px); }
+    .brand { display:flex; gap:12px; align-items:center; font-weight:700; letter-spacing:.02em; }
+    .brand img { width:32px; height:32px; }
+    .nav-links { display:flex; gap:22px; color:var(--muted); font-size:14px; }
+    .nav-links a { text-decoration:none; }
+    .nav-links a:hover { color:var(--text); }
+    .hero { min-height:650px; position:relative; display:grid; place-items:center; overflow:hidden; background:linear-gradient(90deg,rgba(16,21,27,.98) 0%,rgba(16,21,27,.83) 45%,rgba(16,21,27,.32) 100%), url("Background.jpg") center/cover; }
+    .hero-content { width:min(1180px,90vw); padding:90px 0; }
+    .eyebrow { color:var(--accent2); font-size:14px; font-weight:700; letter-spacing:.14em; text-transform:uppercase; }
+    h1 { max-width:700px; margin:14px 0 20px; font-size:clamp(42px,7vw,78px); line-height:1.02; letter-spacing:-.03em; }
+    .lead { max-width:650px; color:var(--muted); font-size:19px; }
+    .actions { display:flex; gap:14px; flex-wrap:wrap; margin-top:32px; }
+    .button { display:inline-flex; align-items:center; justify-content:center; min-height:46px; padding:0 20px; border:1px solid var(--line); border-radius:7px; text-decoration:none; font-weight:700; }
+    .button.primary { color:#071615; background:var(--accent); border-color:var(--accent); }
+    .button.primary:hover { background:var(--accent2); }
+    .button.secondary:hover { border-color:var(--accent); }
+    main { width:min(1180px,90vw); margin:auto; }
+    section { padding:88px 0; }
+    .section-heading { display:flex; justify-content:space-between; align-items:end; gap:24px; margin-bottom:28px; }
+    h2 { margin:0; font-size:32px; line-height:1.15; }
+    .section-heading p { max-width:520px; margin:0; color:var(--muted); }
+    .features { display:grid; grid-template-columns:repeat(3,1fr); gap:16px; }
+    .feature { padding:24px; background:var(--panel); border:1px solid var(--line); border-radius:8px; }
+    .feature strong { display:block; margin-bottom:8px; color:var(--accent2); }
+    .feature p { margin:0; color:var(--muted); }
+    .screens { display:grid; grid-template-columns:1.08fr .92fr; gap:18px; align-items:start; }
+    .screen { overflow:hidden; background:#f7f9fb; border:1px solid var(--line); border-radius:8px; box-shadow:0 16px 44px rgba(0,0,0,.25); }
+    .screen.wide { grid-row:span 2; }
+    .window-bar { display:flex; justify-content:space-between; padding:11px 14px; color:#52616e; background:#e9eef2; font-size:12px; }
+    .window-body { display:grid; grid-template-columns:54px 1fr; min-height:225px; color:#1c2933; }
+    .side { display:flex; flex-direction:column; gap:16px; align-items:center; padding:18px 0; background:#eef2f5; color:#61717d; font-size:18px; }
+    .side .selected { color:#05a99d; }
+    .mock-main { padding:24px; background:#fff; }
+    .mock-title { margin-bottom:5px; font-size:23px; font-weight:700; }
+    .mock-sub { margin-bottom:20px; color:#81909b; font-size:12px; }
+    .mock-card { padding:14px; border:1px solid #dae3e8; border-radius:6px; }
+    .mock-row { display:flex; align-items:center; gap:10px; margin:10px 0; }
+    .mock-label { width:68px; color:#576875; font-size:12px; }
+    .mock-input, .mock-select { height:28px; flex:1; padding:5px 8px; border:1px solid #ccd8df; border-radius:4px; color:#667682; font-size:11px; }
+    .mock-btn { padding:6px 10px; border-radius:4px; color:#fff; background:#08aca1; font-size:11px; }
+    .mock-list { display:grid; gap:8px; margin-top:14px; }
+    .mock-item { display:flex; justify-content:space-between; padding:10px; color:#586a76; background:#f3f7f9; border-radius:5px; font-size:12px; }
+    .download { padding:36px; background:linear-gradient(135deg,#18332f,#18212b); border:1px solid #28544c; border-radius:8px; }
+    .download p { color:var(--muted); }
+    footer { padding:30px 5vw; color:var(--muted); border-top:1px solid var(--line); font-size:13px; }
+    @media (max-width:760px) { .nav-links { display:none; } .hero { min-height:620px; } .features,.screens { grid-template-columns:1fr; } .screen.wide { grid-row:auto; } section { padding:62px 0; } }
+  </style>
+</head>
+<body>
+  <header class="nav">
+    <a class="brand" href="#top"><img src="icon.ico" alt="Better CLX 图标"><span>Better CLX</span></a>
+    <nav class="nav-links" aria-label="页面导航"><a href="#features">功能</a><a href="#screenshots">界面</a><a href="#download">下载</a></nav>
+  </header>
+  <section class="hero" id="top">
+    <div class="hero-content">
+      <div class="eyebrow">Better CLX</div>
+      <h1>让一梦江湖多开与连招管理更清晰。</h1>
+      <p class="lead">统一管理游戏启动、脚本启动、窗口绑定和连招动作。使用 Win32 API 将键盘与鼠标事件发送到指定游戏窗口。</p>
+      <div class="actions"><a class="button primary" href="https://github.com/sueenthear/BetterCLX/releases/latest">前往最新 Release</a><a class="button secondary" href="#screenshots">查看界面</a></div>
+    </div>
+  </section>
+  <main>
+    <section id="features">
+      <div class="section-heading"><h2>为重复操作而设计</h2><p>启动、绑定、编辑和执行都围绕单一目标窗口展开，减少误操作和配置分散。</p></div>
+      <div class="features">
+        <article class="feature"><strong>启动管理</strong><p>支持游戏路径手动配置与 BFS 查找，多个脚本分别保存启动路径和更新网址。</p></article>
+        <article class="feature"><strong>单窗口绑定</strong><p>窗口检测、登录状态和 HWND 绑定集中管理；单击聚焦，双击绑定，并保留缓冲时间。</p></article>
+        <article class="feature"><strong>连招编辑</strong><p>支持组级多触发器、切换/按住模式、键盘动作、延时和鼠标滚动，动作按列表顺序执行。</p></article>
+      </div>
+    </section>
+    <section id="screenshots">
+      <div class="section-heading"><h2>界面预览</h2><p>启动、绑定和连招编辑保持一致的工作区布局，方便快速扫描状态与修改动作。</p></div>
+      <div class="screens">
+        <div class="screen wide"><div class="window-bar"><span>Better CLX</span><span>启动</span></div><div class="window-body"><div class="side"><span class="selected">▶</span><span>↗</span><span>✎</span></div><div class="mock-main"><div class="mock-title">启动</div><div class="mock-sub">管理游戏和脚本，窗口选择与绑定请前往绑定页面</div><div class="mock-card"><b>快速启动游戏</b><div class="mock-row"><span class="mock-label">游戏路径</span><div class="mock-input">D:\wyclx</div><div class="mock-btn">BFS 查找</div></div><div class="mock-row"><span class="mock-label">启动版本</span><div class="mock-select">自动选择 · 64 位多开优先</div><div class="mock-btn">启动游戏</div></div></div></div></div></div>
+        <div class="screen"><div class="window-bar"><span>Better CLX</span><span>绑定</span></div><div class="window-body"><div class="side"><span>▶</span><span class="selected">↗</span><span>✎</span></div><div class="mock-main"><div class="mock-title">绑定窗口</div><div class="mock-sub">双击条目绑定唯一 HWND</div><div class="mock-list"><div class="mock-item"><span>一梦江湖 · 登录中</span><b>双击绑定</b></div><div class="mock-item"><span>一梦江湖 · 运行中</span><b>未绑定</b></div></div></div></div></div>
+        <div class="screen"><div class="window-bar"><span>Better CLX</span><span>连招</span></div><div class="window-body"><div class="side"><span>▶</span><span>↗</span><span class="selected">✎</span></div><div class="mock-main"><div class="mock-title">连招编辑</div><div class="mock-sub">触发配置与动作列表分离</div><div class="mock-list"><div class="mock-item"><span>触发器　Q 切换 · E 按住</span><b>启用</b></div><div class="mock-item"><span>动作 1　按下 1</span><b>⋮</b></div></div></div></div></div>
+      </div>
+    </section>
+    <section id="download"><div class="download"><h2>获取 Better CLX</h2><p>从 GitHub Release 下载最新的 Tk 自解包安装器，选择安装目录，并按需复制默认连招示例和创建桌面快捷方式。</p><a class="button primary" href="https://github.com/sueenthear/BetterCLX/releases/latest">下载最新版本</a></div></section>
+  </main>
+  <footer>Better CLX · 开源项目 · <a href="https://github.com/sueenthear/BetterCLX">GitHub 仓库</a></footer>
+</body>
+</html>
